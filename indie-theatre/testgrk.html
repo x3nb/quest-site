@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -150,6 +150,7 @@
             cursor: pointer;
             display: none; /* Hidden by default */
             box-shadow: 0 0 10px rgba(14, 165, 233, 0.8);
+            z-index: 10; /* Ensure it's on top */
         }
         .play-button:hover {
             background: #1e40af;
@@ -172,8 +173,8 @@
         </div>
         <button class="play-button" id="playButton">Play Video</button>
         <video id="featureVideo" loop preload="auto">
-            <!-- Test URL: Replace with your GitHub raw video URL -->
-            <source src="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4" type="video/mp4">
+            <!-- Reliable test URL: Replace with your GitHub raw video URL -->
+            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
     </div>
@@ -224,8 +225,10 @@
 
         // Play button click handler with error handling
         playButton.addEventListener('click', () => {
+            alert('Button clicked! Attempting to play...'); // Debug alert
             video.play().then(() => {
                 console.log('Video started playing via button');
+                alert('Video is now playing!'); // Success alert
                 playButton.style.display = 'none'; // Hide button after play
             }).catch((error) => {
                 console.error('Play failed:', error);
