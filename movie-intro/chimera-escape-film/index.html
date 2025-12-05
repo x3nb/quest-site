@@ -79,7 +79,11 @@ body::before { content:""; position:fixed; inset:0; background: radial-gradient(
     }
 
     function playFilm(){
-      video.play().catch(()=>{});
+      // Fix: use catch() to prevent errors when play() doesn't return a promise
+      const playPromise = video.play();
+      if(playPromise !== undefined){
+        playPromise.catch(()=>{});
+      }
     }
 
     document.addEventListener('DOMContentLoaded',()=>{
