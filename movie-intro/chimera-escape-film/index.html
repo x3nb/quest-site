@@ -1,47 +1,120 @@
-<!doctype html> 
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Indie Film — Zine Theater</title>
   <style>
-    :root{
-      --bg:#000;
-      --cerulean:#2aa3ff;
-      --cornflower:#6495ed;
-      --neon-yellow:#fffb3b;
-      --deep-purple-1:#5b2aa6;
-      --deep-purple-2:#2b0b5a;
-      --theater-width:820px;
-    }
-    html,body{margin:0;height:100%;background:#000;font-family:Inter,Arial,sans-serif;color:#fff;overflow:hidden}
-    .stage{height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-    .starfield,.glow{position:absolute;inset:0;pointer-events:none}
-    .star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:0.1}
-    @keyframes twinkle{0%{opacity:0.05}50%{opacity:0.6}100%{opacity:0.1}}
-    .glow{background:linear-gradient(135deg,rgba(42,163,255,.06),rgba(100,149,237,.04),rgba(91,42,166,.06))}
-    .theater{width:var(--theater-width);max-width:92vw;aspect-ratio:16/9;position:relative;z-index:10;padding:28px;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8);background:linear-gradient(180deg,rgba(0,0,0,0.9),rgba(6,6,8,0.98));border:2px solid rgba(91,42,166,0.18)}
-    .screen-wrap{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
-    .screen{width:92%;height:92%;background:#000;border-radius:6px;overflow:hidden;box-shadow:inset 0 0 40px rgba(0,0,0,0.6);border:6px solid rgba(0,0,0,0.6)}
-    video{width:100%;height:100%;object-fit:cover;display:block}
-    .grain{position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;background-image:radial-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);background-size:3px 3px;opacity:0.25}
-    @keyframes flicker{0%{opacity:0.02}8%{opacity:0.3}10%{opacity:0.02}20%{opacity:0.12}100%{opacity:0.02}}
-    .flicker{animation:flicker 6s infinite}
-    .badge{position:absolute;left:24px;top:18px;z-index:20;padding:8px 12px;border-radius:6px;background:linear-gradient(90deg,var(--cornflower),var(--cerulean));color:#021020;font-weight:700;letter-spacing:0.08em;font-size:13px;mix-blend-mode:screen}
-    .loader{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:20;text-align:center;color:#dfeeff}
-    .loading-text{font-size:14px;margin-bottom:8px;font-weight:600;letter-spacing:0.06em}
-    .progress{width:420px;max-width:70vw;height:10px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
-    .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--neon-yellow),var(--cerulean))}
-    .timer{margin-top:8px;font-size:12px;opacity:0.9}
-    .curtain{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(90deg,rgba(20,10,40,0.95),rgba(10,5,20,0.85));z-index:30;transition:transform 2.6s ease-in-out}
-    #curtainL{left:0;transform:translateX(0)}
-    #curtainR{right:0;transform:translateX(0)}
-    .curtain-open-L{transform:translateX(-100%)}
-    .curtain-open-R{transform:translateX(100%)}
-    .title-card{position:absolute;z-index:25;top:50%;left:50%;transform:translate(-50%,-50%) scale(1.2);padding:40px 60px;background:#111;border:3px solid #fff;text-transform:uppercase;letter-spacing:0.12em;font-weight:900;font-size:32px;color:#fffb3b;opacity:0;transition:opacity .8s ease, transform .8s ease;mix-blend-mode:screen;filter:contrast(140%) brightness(120%)}
-    .title-show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-    .credit{position:absolute;bottom:18px;left:18px;color:rgba(220,220,255,0.85);font-size:12px;font-weight:600;letter-spacing:0.06em}
-  </style>
+/* --- RESET --- */
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #000;
+  overflow: hidden;
+  height: 100%;
+  font-family: 'Courier New', monospace;
+}
+
+/* --- THEATER BACKGROUND --- */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(20,20,40,0.6) 0%, rgba(0,0,0,1) 70%),
+              url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="2" height="2"><circle cx="1" cy="1" r="1" fill="white"/></svg>');
+  background-size: cover, 2px 2px;
+  animation: starBlink 4s infinite alternate ease-in-out;
+  z-index: -1;
+}
+
+@keyframes starBlink {
+  0% { opacity: 0.6; }
+  100% { opacity: 0.9; }
+}
+
+/* --- CURTAINS (actual sliding panels) --- */
+#curtain-left, #curtain-right {
+  position: fixed;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to bottom, #2e0249, #4b0082 40%, #000 100%);
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+  z-index: 5;
+  transition: transform 2.2s ease-in-out;
+}
+#curtain-left { left: 0; transform: translateX(0); }
+#curtain-right { right: 0; transform: translateX(0); }
+
+.curtain-open-left { transform: translateX(-100%); }
+.curtain-open-right { transform: translateX(100%); }
+
+/* --- LOADER & TITLE CARD --- */
+#loader {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 1.2rem;
+  text-align: center;
+  z-index: 10;
+}
+
+#progress-bar {
+  width: 240px;
+  height: 8px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+#progress-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #00c6ff, #7f00ff);
+  transition: width 0.2s linear;
+}
+
+#title-card {
+  opacity: 0;
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(1.2);
+  color: neonyellow;
+  padding: 20px 40px;
+  background: rgba(255,255,255,0.05);
+  border: 2px dashed #fff;
+  text-shadow: 0 0 8px #fff;
+  filter: contrast(180%) brightness(120%) grayscale(40%);
+  font-size: 2rem;
+  letter-spacing: 2px;
+  z-index: 9;
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+#title-card.visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* --- VIDEO SCREEN --- */
+#film-container {
+  opacity: 0;
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 900px;
+  box-shadow: 0 0 45px rgba(0,0,0,0.9);
+  border: 4px solid rgba(255,255,255,0.1);
+  transition: opacity 1.2s ease;
+  z-index: 8;
+}
+
+#film-container.visible {
+  opacity: 1;
+}
+</style>
 </head>
 <body>
   <div class="stage">
@@ -138,4 +211,3 @@
   </script>
 </body>
 </html>
-
