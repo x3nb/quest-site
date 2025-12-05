@@ -1,5 +1,5 @@
-<!DOCTYPE html>  
-<html lang="en"> 
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -133,6 +133,27 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
+
+        /* Play button (fallback if auto-play fails) */
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #0ea5e9;
+            color: #0f172a;
+            border: none;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none; /* Hidden by default */
+            box-shadow: 0 0 10px rgba(14, 165, 233, 0.8);
+        }
+        .play-button:hover {
+            background: #1e40af;
+        }
     </style>
 </head>
 <body>
@@ -149,9 +170,10 @@
         <div class="progress-container">
             <div class="progress-bar"></div>
         </div>
+        <button class="play-button" id="playButton">Play Video</button>
         <video id="featureVideo" loop>
             <!-- Replace with your GitHub raw video URL -->
-            <source src="chimera-epic-film.mp4" type="video/mp4">
+            <source src="https://raw.githubusercontent.com/yourusername/yourrepo/main/yourvideo.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
     </div>
@@ -171,15 +193,27 @@
         // Progress bar and video play logic
         const loadingText = document.getElementById('loadingText');
         const video = document.getElementById('featureVideo');
+        const playButton = document.getElementById('playButton');
 
         setTimeout(() => {
             loadingText.textContent = 'Loading Complete'; // Update text
             setTimeout(() => {
                 loadingText.style.display = 'none'; // Hide text
                 video.style.display = 'block'; // Show video
-                video.play(); // Auto-play with sound
+                // Attempt auto-play
+                video.play().catch(() => {
+                    // If auto-play fails (e.g., browser policy), show play button
+                    playButton.style.display = 'block';
+                });
             }, 500); // Slight delay
         }, 3000); // 3-second timer
+
+        // Play button click handler
+        playButton.addEventListener('click', () => {
+            video.play();
+            playButton.style.display = 'none'; // Hide button after play
+        });
     </script>
 </body>
 </html>
+
