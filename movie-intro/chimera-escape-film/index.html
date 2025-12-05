@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Indie Film — Zine Theater</title>
+  <style>
+    :root{
+      --bg:#000;
+      --cerulean:#2aa3ff;
+      --cornflower:#6495ed;
+      --neon-yellow:#fffb3b;
+      --deep-purple-1:#5b2aa6;
+      --deep-purple-2:#2b0b5a;
+      --theater-width:820px;
+    }
+    html,body{margin:0;height:100%;background:#000;font-family:Inter,Arial,sans-serif;color:#fff;overflow:hidden}
+    .stage{height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+    .starfield,.glow{position:absolute;inset:0;pointer-events:none}
+    .star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:0.1}
+    @keyframes twinkle{0%{opacity:0.05}50%{opacity:0.6}100%{opacity:0.1}}
+    .glow{background:linear-gradient(135deg,rgba(42,163,255,.06),rgba(100,149,237,.04),rgba(91,42,166,.06))}
+    .theater{width:var(--theater-width);max-width:92vw;aspect-ratio:16/9;position:relative;z-index:10;padding:28px;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8);background:linear-gradient(180deg,rgba(0,0,0,0.9),rgba(6,6,8,0.98));border:2px solid rgba(91,42,166,0.18)}
+    .screen-wrap{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+    .screen{width:92%;height:92%;background:#000;border-radius:6px;overflow:hidden;box-shadow:inset 0 0 40px rgba(0,0,0,0.6);border:6px solid rgba(0,0,0,0.6)}
+    video{width:100%;height:100%;object-fit:cover;display:block}
+    .grain{position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;background-image:radial-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);background-size:3px 3px;opacity:0.25}
+    @keyframes flicker{0%{opacity:0.02}8%{opacity:0.3}10%{opacity:0.02}20%{opacity:0.12}100%{opacity:0.02}}
+    .flicker{animation:flicker 6s infinite}
+    .badge{position:absolute;left:24px;top:18px;z-index:20;padding:8px 12px;border-radius:6px;background:linear-gradient(90deg,var(--cornflower),var(--cerulean));color:#021020;font-weight:700;letter-spacing:0.08em;font-size:13px;mix-blend-mode:screen}
+    .loader{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:20;text-align:center;color:#dfeeff}
+    .loading-text{font-size:14px;margin-bottom:8px;font-weight:600;letter-spacing:0.06em}
+    .progress{width:420px;max-width:70vw;height:10px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
+    .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--neon-yellow),var(--cerulean))}
+    .timer{margin-top:8px;font-size:12px;opacity:0.9}
+    .curtain{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(90deg,rgba(20,10,40,0.95),rgba(10,5,20,0.85));z-index:30;transition:transform 2.6s ease-in-out}
+    #curtainL{left:0;transform:translateX(0)}
+    #curtainR{right:0;transform:translateX(0)}
+    .curtain-open-L{transform:translateX(-100%)}
+    .curtain-open-R{transform:translateX(100%)}
+    .title-card{position:absolute;z-index:25;top:50%;left:50%;transform:translate(-50%,-50%) scale(1.2);padding:40px 60px;background:#111;border:3px solid #fff;text-transform:uppercase;letter-spacing:0.12em;font-weight:900;font-size:32px;color:#fffb3b;opacity:0;transition:opacity .8s ease, transform .8s ease;mix-blend-mode:screen;filter:contrast(140%) brightness(120%)}
+    .title-show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+    .credit{position:absolute;bottom:18px;left:18px;color:rgba(220,220,255,0.85);font-size:12px;font-weight:600;letter-spacing:0.06em}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="starfield" id="starfield"></div>
+    <div class="glow"></div>
+    <div id="curtainL" class="curtain"></div>
+    <div id="curtainR" class="curtain"></div>
+
+    <div class="theater">
+      <div class="badge">indie · punk zine</div>
+      <div class="screen-wrap">
+        <div class="screen">
+          <video id="filmVideo" preload="auto" playsinline webkit-playsinline>
+            <source src="Chimera-Movie.mp4" type="video/mp4" />
+          </video>
+          <div class="grain flicker"></div>
+        </div>
+      </div>
+
+      <div class="title-card" id="titleCard">Chimera — A Short Film</div>
+
+      <div class="loader" id="loader">
+        <div class="loading-text">Loading Feature...</div>
+        <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="timer" id="timer">0%</div>
+      </div>
+
+      <div class="credit">— Feature presentation —</div>
+    </div>
+  </div>
+
+  <script>
+    const video = document.getElementById('filmVideo');
+    const progressBar = document.getElementById('progressBar');
+    const timerText = document.getElementById('timer');
+    const loader = document.getElementById('loader');
+    const curtainL = document.getElementById('curtainL');
+    const curtainR = document.getElementById('curtainR');
+    const titleCard = document.getElementById('titleCard');
+    const STAR_COUNT = 140;
+
+    const starfield = document.getElementById('starfield');
+    for(let i=0;i<STAR_COUNT;i++){
+      const s=document.createElement('div');
+      s.className='star';
+      s.style.top=Math.random()*100+'%';
+      s.style.left=Math.random()*100+'%';
+      s.style.animation=`twinkle ${Math.random()*4+2}s ${Math.random()*2}s infinite`;
+      starfield.appendChild(s);
+    }
+
+    video.muted=true;
+
+    function startSequence(){
+      const duration = 6500;
+      const start = performance.now();
+
+      function tick(now){
+        const pct=Math.min(1,(now-start)/duration);
+        const percent=Math.round(pct*100);
+        progressBar.style.width=percent+'%';
+        timerText.textContent=percent+'%';
+
+        if(pct<1){requestAnimationFrame(tick);} else {
+          loader.style.opacity=0;
+          setTimeout(()=>loader.style.display='none',400);
+
+          curtainL.classList.add('curtain-open-L');
+          curtainR.classList.add('curtain-open-R');
+
+          setTimeout(()=>{
+            titleCard.classList.add('title-show');
+          },900);
+
+          setTimeout(()=>{
+            titleCard.style.opacity=0;
+          },3000);
+
+          setTimeout(()=>{
+            playFilm();
+          },3800);
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function playFilm(){
+      video.play();
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      setTimeout(startSequence,300);
+    });
+  </script>
+</body>
+</html>
