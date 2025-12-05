@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Chimera Escape - Tron Terminal Feature</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0f172a 0%, #0ea5e9 50%, #1e40af 100%); /* Black to cerulean blue gradient for Tron grid feel */
+            color: #0ea5e9; /* Cerulean blue for text */
+            font-family: 'Courier New', monospace; /* Tron terminal font */
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Tron grid background */
+        .grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(14, 165, 233, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14, 165, 233, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridPulse 2s infinite alternate;
+        }
+        @keyframes gridPulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Cosmic stars background */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #0ea5e9; /* Cerulean blue stars */
+            border-radius: 50%;
+            animation: blink 3s infinite ease-in-out;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        /* Tron terminal screen container */
+        .terminal {
+            position: relative;
+            width: 80vw;
+            max-width: 800px;
+            height: 60vh;
+            border: 3px solid #0ea5e9; /* Cerulean blue border */
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.8); /* Cerulean glow */
+            background: #0f172a; /* Black background for screen */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-size: 14px;
+        }
+
+        /* Video element */
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none; /* Hidden until progress completes */
+        }
+
+        /* Epic progress bar (Tron-style horizontal bar) */
+        .progress-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            height: 10px;
+            background: rgba(14, 165, 233, 0.2); /* Subtle cerulean background */
+            border: 1px solid #0ea5e9;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #0ea5e9, #1e40af); /* Cerulean to cornflower gradient */
+            width: 0%;
+            animation: fillProgress 3s linear forwards; /* 3-second fill */
+            box-shadow: 0 0 10px rgba(14, 165, 233, 0.8); /* Glowing effect */
+        }
+        @keyframes fillProgress {
+            to { width: 100%; }
+        }
+
+        /* Terminal text overlay */
+        .overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 18px;
+            color: #0ea5e9;
+            text-shadow: 0 0 5px #0ea5e9;
+            z-index: 5;
+        }
+
+        /* Loading text */
+        .loading-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            color: #0ea5e9;
+            text-shadow: 0 0 5px #0ea5e9;
+            animation: flicker 1s infinite;
+        }
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Play button (fallback if auto-play fails) */
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #0ea5e9;
+            color: #0f172a;
+            border: none;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none; /* Hidden by default */
+            box-shadow: 0 0 10px rgba(14, 165, 233, 0.8);
+        }
+        .play-button:hover {
+            background: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <!-- Tron grid background -->
+    <div class="grid"></div>
+
+    <!-- Cosmic stars -->
+    <div class="stars" id="stars"></div>
+
+    <!-- Tron terminal screen -->
+    <div class="terminal">
+        <div class="overlay">The Chimera Escape</div>
+        <div class="loading-text" id="loadingText">Initializing...</div>
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+        <button class="play-button" id="playButton">Play Video</button>
+        <video id="featureVideo" loop preload="auto">
+            <!-- Test URL: Replace with your GitHub raw video URL -->
+            <source src="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <script>
+        // Generate random blinking stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 50; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            starsContainer.appendChild(star);
+        }
+
+        // Progress bar and video play logic
+        const loadingText = document.getElementById('loadingText');
+        const video = document.getElementById('featureVideo');
+        const playButton = document.getElementById('playButton');
+
+        // Debugging: Check if video loads
+        video.addEventListener('canplaythrough', () => {
+            console.log('Video is ready to play');
+            alert('Video loaded successfully!'); // Temporary alert for testing
+        });
+
+        video.addEventListener('error', (e) => {
+            console.error('Video load error:', e);
+            alert('Video failed to load. Error: ' + e.message + '. Check the URL or try a different source.');
+        });
+
+        setTimeout(() => {
+            loadingText.textContent = 'Loading Complete'; // Update text
+            setTimeout(() => {
+                loadingText.style.display = 'none'; // Hide text
+                video.style.display = 'block'; // Show video
+                // Attempt auto-play
+                video.play().then(() => {
+                    console.log('Auto-play succeeded');
+                }).catch((error) => {
+                    console.log('Auto-play failed:', error);
+                    alert('Auto-play blocked. Click the play button.'); // Alert for user
+                    playButton.style.display = 'block';
+                });
+            }, 500); // Slight delay
+        }, 3000); // 3-second timer
+
+        // Play button click handler with error handling
+        playButton.addEventListener('click', () => {
+            video.play().then(() => {
+                console.log('Video started playing via button');
+                playButton.style.display = 'none'; // Hide button after play
+            }).catch((error) => {
+                console.error('Play failed:', error);
+                alert('Unable to play video. Error: ' + error.message + '. Try refreshing or check browser settings.');
+            });
+        });
+    </script>
+</body>
+</html>
